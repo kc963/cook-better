@@ -1,15 +1,20 @@
 package com.bot.cookbetter.utils;
 
+import com.bot.cookbetter.handler.IngredientReportHandler;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.*;
-
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RequestHandlerUtil {
 
@@ -97,13 +102,23 @@ public class RequestHandlerUtil {
                     user.setQuickMeal(selectedValue);
                     break;
 
+
                 case "special_occasions":
                     user.setSpecialOccasion(selectedValue);
                     break;
 
                 case "search_button":
-                    user.startSearch(response_url);
+                    try {
+                        user.startSearch(response_url);
+                    }
+                    catch (Exception e){
+                        System.out.println(e.getMessage());
+                    }
                     user = null;
+                    break;
+
+                case "ynbutton":
+                    user.setLike(response_url, selectedValue);
                     break;
 
                 // Handling user selections for /personalize command
@@ -163,6 +178,7 @@ public class RequestHandlerUtil {
                     p_user.submitPreferences(response_url);
                     p_user = null;
                     break;
+
             }
 
             searchSession.put(userID, user);
@@ -213,6 +229,10 @@ public class RequestHandlerUtil {
         else if("/surpriseme".equals(command)) {
             String userID = requestMap.get("user_id");
             responseObj = ResponseConstructionUtil.getInstance().surpriseMe(userID);
+            //responseObj = ResponseConstructionUtil.getInstance().surpriseMe();
+        }
+        else if ("/beyourownchef".equals(command)){
+            responseObj = new IngredientReportHandler().buildReport(requestMap.get("text"));
         }
         return responseObj;
     }
